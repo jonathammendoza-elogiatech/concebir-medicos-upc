@@ -13,6 +13,7 @@ import com.example.medicitas.presentation.screens.detalle.DetalleCitaScreen
 import com.example.medicitas.presentation.screens.inicio.InicioScreen
 import com.example.medicitas.presentation.screens.login.LoginScreen
 import com.example.medicitas.presentation.screens.perfil.PerfilScreen
+import com.example.medicitas.presentation.screens.registrar.RegistrarAtencionScreen
 
 @Composable
 fun AppNavigation(navController: NavHostController) {
@@ -52,7 +53,12 @@ fun AppNavigation(navController: NavHostController) {
                 onRegistrarAtencion = { navController.navigate(RutasNav.registrar(it)) }
             )
         }
-        composable(RutasNav.REGISTRAR, arguments = argCita) { PantallaPendiente("Registrar atención") }
+        composable(RutasNav.REGISTRAR, arguments = argCita) {
+            RegistrarAtencionScreen(
+                onBack = { navController.popBackStack() },
+                onRegistrada = { navController.popBackStack() }
+            )
+        }
         composable(RutasNav.FICHA, arguments = argPaciente) { PantallaPendiente("Ficha del paciente") }
         composable(RutasNav.RESULTADOS, arguments = argPaciente) { PantallaPendiente("Resultados") }
     }
