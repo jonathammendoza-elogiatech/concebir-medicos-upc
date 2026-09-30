@@ -1,12 +1,14 @@
 package com.example.medicitas.presentation.navigation
 
 import androidx.compose.runtime.Composable
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.example.medicitas.presentation.common.PantallaPendiente
+import com.example.medicitas.presentation.screens.inicio.InicioScreen
 import com.example.medicitas.presentation.screens.login.LoginScreen
 import com.example.medicitas.presentation.screens.perfil.PerfilScreen
 
@@ -23,7 +25,12 @@ fun AppNavigation(navController: NavHostController) {
                 }
             })
         }
-        composable(BottomNavItem.Inicio.ruta) { PantallaPendiente("Resumen del día") }
+        composable(BottomNavItem.Inicio.ruta) {
+            InicioScreen(
+                onVerCita = { navController.navigate(RutasNav.detalle(it)) },
+                onVerAgenda = { navController.navegarATab(BottomNavItem.Agenda) }
+            )
+        }
         composable(BottomNavItem.Agenda.ruta) { PantallaPendiente("Agenda") }
         composable(BottomNavItem.Pacientes.ruta) { PantallaPendiente("Pacientes") }
         composable(BottomNavItem.Perfil.ruta) {
@@ -37,5 +44,14 @@ fun AppNavigation(navController: NavHostController) {
         composable(RutasNav.REGISTRAR, arguments = argCita) { PantallaPendiente("Registrar atención") }
         composable(RutasNav.FICHA, arguments = argPaciente) { PantallaPendiente("Ficha del paciente") }
         composable(RutasNav.RESULTADOS, arguments = argPaciente) { PantallaPendiente("Resultados") }
+    }
+}
+
+// Misma navegación que la barra inferior, para accesos directos entre pestañas
+fun NavHostController.navegarATab(item: BottomNavItem) {
+    navigate(item.ruta) {
+        popUpTo(graph.findStartDestination().id) { saveState = true }
+        launchSingleTop = true
+        restoreState = true
     }
 }
