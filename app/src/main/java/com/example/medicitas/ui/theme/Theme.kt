@@ -1,58 +1,60 @@
 package com.example.medicitas.ui.theme
 
-import android.app.Activity
-import android.os.Build
-import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
+import androidx.compose.material3.Shapes
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
-
-private val DarkColorScheme = darkColorScheme(
-    primary = Purple80,
-    secondary = PurpleGrey80,
-    tertiary = Pink80
-)
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
 
 private val LightColorScheme = lightColorScheme(
-    primary = Purple40,
-    secondary = PurpleGrey40,
-    tertiary = Pink40
-
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
+    primary = Petroleo,
     onPrimary = Color.White,
+    primaryContainer = PetroleoClaro,
+    onPrimaryContainer = PetroleoOscuro,
+    secondary = Turquesa,
     onSecondary = Color.White,
+    secondaryContainer = TurquesaClaro,
+    onSecondaryContainer = Color(0xFF00504C),
+    tertiary = EstadoAtendida,
     onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-    */
+    tertiaryContainer = EstadoAtendidaFondo,
+    onTertiaryContainer = EstadoAtendida,
+    error = EstadoAlerta,
+    onError = Color.White,
+    errorContainer = EstadoAlertaFondo,
+    onErrorContainer = EstadoAlerta,
+    background = Fondo,
+    onBackground = TextoPrincipal,
+    surface = Superficie,
+    onSurface = TextoPrincipal,
+    surfaceVariant = SuperficieVariante,
+    onSurfaceVariant = TextoSecundario,
+    surfaceContainerLowest = Superficie,
+    surfaceContainerLow = Superficie,
+    surfaceContainer = Superficie,
+    surfaceContainerHigh = Superficie,
+    surfaceContainerHighest = SuperficieVariante,
+    outline = Borde,
+    outlineVariant = Borde
 )
 
+private val MedicitasShapes = Shapes(
+    extraSmall = RoundedCornerShape(6.dp),
+    small = RoundedCornerShape(10.dp),
+    medium = RoundedCornerShape(12.dp),
+    large = RoundedCornerShape(16.dp),
+    extraLarge = RoundedCornerShape(28.dp)
+)
+
+// Tema white-label: sin color dinámico para respetar la marca de la entidad
 @Composable
-fun MedicitasTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
-    content: @Composable () -> Unit
-) {
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        }
-
-        darkTheme -> DarkColorScheme
-        else -> LightColorScheme
-    }
-
+fun MedicitasTheme(content: @Composable () -> Unit) {
     MaterialTheme(
-        colorScheme = colorScheme,
+        colorScheme = LightColorScheme,
         typography = Typography,
+        shapes = MedicitasShapes,
         content = content
     )
 }
