@@ -8,6 +8,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.example.medicitas.presentation.common.PantallaPendiente
+import com.example.medicitas.presentation.screens.agenda.AgendaScreen
 import com.example.medicitas.presentation.screens.inicio.InicioScreen
 import com.example.medicitas.presentation.screens.login.LoginScreen
 import com.example.medicitas.presentation.screens.perfil.PerfilScreen
@@ -31,7 +32,9 @@ fun AppNavigation(navController: NavHostController) {
                 onVerAgenda = { navController.navegarATab(BottomNavItem.Agenda) }
             )
         }
-        composable(BottomNavItem.Agenda.ruta) { PantallaPendiente("Agenda") }
+        composable(BottomNavItem.Agenda.ruta) {
+            AgendaScreen(onVerCita = { navController.navigate(RutasNav.detalle(it)) })
+        }
         composable(BottomNavItem.Pacientes.ruta) { PantallaPendiente("Pacientes") }
         composable(BottomNavItem.Perfil.ruta) {
             PerfilScreen(onSesionCerrada = {
