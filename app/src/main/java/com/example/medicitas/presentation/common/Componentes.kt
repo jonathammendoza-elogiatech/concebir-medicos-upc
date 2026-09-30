@@ -29,6 +29,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.example.medicitas.domain.model.EstadoCita
@@ -77,7 +78,7 @@ fun EstadoChip(texto: String, colores: ColoresEstado, modifier: Modifier = Modif
             Box(Modifier.size(6.dp).background(colores.punto, CircleShape))
         }
         Spacer(Modifier.width(6.dp))
-        Text(texto, style = MaterialTheme.typography.labelMedium, color = colores.texto)
+        Text(texto, style = MaterialTheme.typography.labelMedium, color = colores.texto, maxLines = 1, overflow = TextOverflow.Ellipsis)
     }
 }
 

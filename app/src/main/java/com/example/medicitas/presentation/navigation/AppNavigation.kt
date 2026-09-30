@@ -12,6 +12,7 @@ import com.example.medicitas.presentation.screens.agenda.AgendaScreen
 import com.example.medicitas.presentation.screens.detalle.DetalleCitaScreen
 import com.example.medicitas.presentation.screens.inicio.InicioScreen
 import com.example.medicitas.presentation.screens.login.LoginScreen
+import com.example.medicitas.presentation.screens.pacientes.PacientesScreen
 import com.example.medicitas.presentation.screens.perfil.PerfilScreen
 import com.example.medicitas.presentation.screens.registrar.RegistrarAtencionScreen
 
@@ -37,7 +38,9 @@ fun AppNavigation(navController: NavHostController) {
         composable(BottomNavItem.Agenda.ruta) {
             AgendaScreen(onVerCita = { navController.navigate(RutasNav.detalle(it)) })
         }
-        composable(BottomNavItem.Pacientes.ruta) { PantallaPendiente("Pacientes") }
+        composable(BottomNavItem.Pacientes.ruta) {
+            PacientesScreen(onVerPaciente = { navController.navigate(RutasNav.ficha(it)) })
+        }
         composable(BottomNavItem.Perfil.ruta) {
             PerfilScreen(onSesionCerrada = {
                 navController.navigate(RutasNav.LOGIN) {
