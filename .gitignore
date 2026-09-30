@@ -8,7 +8,6 @@
 .cxx
 local.properties
 
-# Config local de IDE / asistentes — no versionar
+# Config local de IDE — no versionar
 .idea/
-.claude/
 .vscode/
