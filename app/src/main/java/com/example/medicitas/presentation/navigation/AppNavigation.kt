@@ -10,6 +10,7 @@ import androidx.navigation.navArgument
 import com.example.medicitas.presentation.common.PantallaPendiente
 import com.example.medicitas.presentation.screens.agenda.AgendaScreen
 import com.example.medicitas.presentation.screens.detalle.DetalleCitaScreen
+import com.example.medicitas.presentation.screens.ficha.FichaPacienteScreen
 import com.example.medicitas.presentation.screens.inicio.InicioScreen
 import com.example.medicitas.presentation.screens.login.LoginScreen
 import com.example.medicitas.presentation.screens.pacientes.PacientesScreen
@@ -62,7 +63,12 @@ fun AppNavigation(navController: NavHostController) {
                 onRegistrada = { navController.popBackStack() }
             )
         }
-        composable(RutasNav.FICHA, arguments = argPaciente) { PantallaPendiente("Ficha del paciente") }
+        composable(RutasNav.FICHA, arguments = argPaciente) {
+            FichaPacienteScreen(
+                onBack = { navController.popBackStack() },
+                onVerResultados = { navController.navigate(RutasNav.resultados(it)) }
+            )
+        }
         composable(RutasNav.RESULTADOS, arguments = argPaciente) { PantallaPendiente("Resultados") }
     }
 }
