@@ -8,6 +8,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.example.medicitas.presentation.common.PantallaPendiente
 import com.example.medicitas.presentation.screens.login.LoginScreen
+import com.example.medicitas.presentation.screens.perfil.PerfilScreen
 
 @Composable
 fun AppNavigation(navController: NavHostController) {
@@ -25,7 +26,13 @@ fun AppNavigation(navController: NavHostController) {
         composable(BottomNavItem.Inicio.ruta) { PantallaPendiente("Resumen del día") }
         composable(BottomNavItem.Agenda.ruta) { PantallaPendiente("Agenda") }
         composable(BottomNavItem.Pacientes.ruta) { PantallaPendiente("Pacientes") }
-        composable(BottomNavItem.Perfil.ruta) { PantallaPendiente("Perfil") }
+        composable(BottomNavItem.Perfil.ruta) {
+            PerfilScreen(onSesionCerrada = {
+                navController.navigate(RutasNav.LOGIN) {
+                    popUpTo(navController.graph.id) { inclusive = true }
+                }
+            })
+        }
         composable(RutasNav.DETALLE, arguments = argCita) { PantallaPendiente("Detalle de la cita") }
         composable(RutasNav.REGISTRAR, arguments = argCita) { PantallaPendiente("Registrar atención") }
         composable(RutasNav.FICHA, arguments = argPaciente) { PantallaPendiente("Ficha del paciente") }
