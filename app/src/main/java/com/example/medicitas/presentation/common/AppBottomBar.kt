@@ -10,10 +10,10 @@ import androidx.compose.material3.NavigationBarItemDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.medicitas.presentation.navigation.BottomNavItem
+import com.example.medicitas.presentation.navigation.navegarATab
 import com.example.medicitas.ui.theme.PetroleoClaro
 import com.example.medicitas.ui.theme.TextoSecundario
 
@@ -38,15 +38,7 @@ fun AppBottomBar(navController: NavHostController) {
                         unselectedIconColor = TextoSecundario,
                         unselectedTextColor = TextoSecundario
                     ),
-                    onClick = {
-                        navController.navigate(item.ruta) {
-                            popUpTo(navController.graph.findStartDestination().id) {
-                                saveState = true
-                            }
-                            launchSingleTop = true
-                            restoreState = true
-                        }
-                    }
+                    onClick = { navController.navegarATab(item) }
                 )
             }
         }

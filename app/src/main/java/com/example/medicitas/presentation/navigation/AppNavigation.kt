@@ -1,13 +1,11 @@
 package com.example.medicitas.presentation.navigation
 
 import androidx.compose.runtime.Composable
-import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.example.medicitas.presentation.common.PantallaPendiente
 import com.example.medicitas.presentation.screens.agenda.AgendaScreen
 import com.example.medicitas.presentation.screens.detalle.DetalleCitaScreen
 import com.example.medicitas.presentation.screens.ficha.FichaPacienteScreen
@@ -16,6 +14,7 @@ import com.example.medicitas.presentation.screens.login.LoginScreen
 import com.example.medicitas.presentation.screens.pacientes.PacientesScreen
 import com.example.medicitas.presentation.screens.perfil.PerfilScreen
 import com.example.medicitas.presentation.screens.registrar.RegistrarAtencionScreen
+import com.example.medicitas.presentation.screens.resultados.ResultadosScreen
 
 @Composable
 fun AppNavigation(navController: NavHostController) {
@@ -69,14 +68,17 @@ fun AppNavigation(navController: NavHostController) {
                 onVerResultados = { navController.navigate(RutasNav.resultados(it)) }
             )
         }
-        composable(RutasNav.RESULTADOS, arguments = argPaciente) { PantallaPendiente("Resultados") }
+        composable(RutasNav.RESULTADOS, arguments = argPaciente) {
+            ResultadosScreen(onBack = { navController.popBackStack() })
+        }
     }
 }
 
-// Misma navegación que la barra inferior, para accesos directos entre pestañas
+// Navegación entre pestañas. El ancla es Inicio y no el start destination (login),
+// porque login se retira del back stack al iniciar sesión.
 fun NavHostController.navegarATab(item: BottomNavItem) {
     navigate(item.ruta) {
-        popUpTo(graph.findStartDestination().id) { saveState = true }
+        popUpTo(BottomNavItem.Inicio.ruta) { saveState = true }
         launchSingleTop = true
         restoreState = true
     }
