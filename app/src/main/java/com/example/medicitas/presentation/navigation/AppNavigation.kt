@@ -7,6 +7,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.example.medicitas.presentation.common.PantallaPendiente
+import com.example.medicitas.presentation.screens.login.LoginScreen
 
 @Composable
 fun AppNavigation(navController: NavHostController) {
@@ -14,7 +15,13 @@ fun AppNavigation(navController: NavHostController) {
     val argPaciente = listOf(navArgument(RutasNav.ARG_PACIENTE_ID) { type = NavType.StringType })
 
     NavHost(navController = navController, startDestination = RutasNav.LOGIN) {
-        composable(RutasNav.LOGIN) { PantallaPendiente("Inicio de sesión") }
+        composable(RutasNav.LOGIN) {
+            LoginScreen(onLoginExitoso = {
+                navController.navigate(BottomNavItem.Inicio.ruta) {
+                    popUpTo(RutasNav.LOGIN) { inclusive = true }
+                }
+            })
+        }
         composable(BottomNavItem.Inicio.ruta) { PantallaPendiente("Resumen del día") }
         composable(BottomNavItem.Agenda.ruta) { PantallaPendiente("Agenda") }
         composable(BottomNavItem.Pacientes.ruta) { PantallaPendiente("Pacientes") }
