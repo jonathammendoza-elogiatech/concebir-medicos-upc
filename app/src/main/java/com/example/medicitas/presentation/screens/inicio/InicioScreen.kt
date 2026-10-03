@@ -20,6 +20,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.outlined.EventAvailable
 import androidx.compose.material.icons.outlined.EventBusy
 import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.MeetingRoom
@@ -74,7 +75,11 @@ fun InicioScreen(
             CargandoContenido()
             return@Column
         }
-        val saludo = if (datos.horaActual.hour < 12) "Buenos días" else "Buenas tardes"
+        val saludo = when {
+            datos.horaActual.hour < 12 -> "Buenos días"
+            datos.horaActual.hour < 19 -> "Buenas tardes"
+            else -> "Buenas noches"
+        }
         AppTopBar(
             titulo = "$saludo, ${datos.medico.nombreCorto}",
             subtitulo = "${datos.fecha.formatoDiaMes()} · Sede ${datos.medico.sedeActiva.nombre}",
@@ -103,11 +108,21 @@ private fun ContenidoInicio(resumen: ResumenDia, onVerCita: (String) -> Unit, on
             item { EstadoVacio("Hoy no tienes citas programadas", Icons.Outlined.EventBusy) }
             return@LazyColumn
         }
-        resumen.proximaCita?.let { proxima ->
-            item {
-                ProximaAtencion(proxima, minutosRestantes(resumen, proxima), onVerDetalle = { onVerCita(proxima.id) })
+        val proxima = resumen.proximaCita
+        if (proxima == null) {
+            // Ya pasaron todas las citas de hoy; las no registradas siguen en la Agenda
+            val texto = if (resumen.pendientesRegistro > 0) {
+                "No tienes más citas por hoy. Te quedan ${resumen.pendientesRegistro} por registrar en la Agenda"
+            } else {
+                "No tienes más citas por hoy"
             }
+            item { EstadoVacio(texto, Icons.Outlined.EventAvailable) }
+            return@LazyColumn
         }
+        item {
+            ProximaAtencion(proxima, minutosRestantes(resumen, proxima), onVerDetalle = { onVerCita(proxima.id) })
+        }
+        if (resumen.siguientesCitas.isEmpty()) return@LazyColumn
         item {
             SeccionTitulo("SIGUIENTES CITAS", modifier = Modifier.padding(top = 8.dp)) {
                 TextButton(onClick = onVerAgenda) {
@@ -123,6 +138,17 @@ private fun ContenidoInicio(resumen: ResumenDia, onVerCita: (String) -> Unit, on
 
 private fun minutosRestantes(resumen: ResumenDia, cita: Cita): Long =
     Duration.between(resumen.horaActual, cita.hora).toMinutes()
+
+// "15 MIN", "1 H", "2 H 05 MIN"
+private fun formatoMinutos(minutos: Long): String {
+    val horas = minutos / 60
+    val resto = minutos % 60
+    return when {
+        horas == 0L -> "$resto MIN"
+        resto == 0L -> "$horas H"
+        else -> "$horas H %02d MIN".format(resto)
+    }
+}
 
 @Composable
 private fun Metrica(valor: Int, etiqueta: String, color: Color, modifier: Modifier = Modifier) {
@@ -151,7 +177,7 @@ private fun ProximaAtencion(cita: Cita, minutos: Long, onVerDetalle: () -> Unit)
             Box(Modifier.fillMaxWidth().height(4.dp).background(MaterialTheme.colorScheme.secondary))
             Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    val etiqueta = if (minutos >= 0) "PRÓXIMA ATENCIÓN · EN $minutos MIN" else "PRÓXIMA ATENCIÓN"
+                    val etiqueta = "PRÓXIMA ATENCIÓN · EN ${formatoMinutos(minutos)}"
                     Row(
                         modifier = Modifier.background(EstadoAtendidaFondo, CircleShape).padding(horizontal = 10.dp, vertical = 4.dp),
                         verticalAlignment = Alignment.CenterVertically

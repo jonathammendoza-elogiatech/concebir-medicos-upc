@@ -51,6 +51,7 @@ import com.example.medicitas.presentation.common.EstadoVacio
 import com.example.medicitas.presentation.common.SeccionTitulo
 import com.example.medicitas.presentation.common.abreviatura
 import com.example.medicitas.presentation.common.formatoDiaMes
+import com.example.medicitas.presentation.common.formatoHora
 import com.example.medicitas.presentation.common.nombreMes
 import com.example.medicitas.ui.theme.EstadoAtendida
 import com.example.medicitas.ui.theme.PetroleoClaro
@@ -70,9 +71,10 @@ fun AgendaScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val sedeTexto = uiState.sedeFiltro?.let { "Sede ${it.nombre}" } ?: "Todas las sedes"
+    val subtitulo = listOfNotNull(sedeTexto, uiState.actualizadoA?.let { "Actualizado ${it.formatoHora()}" }).joinToString(" · ")
 
     Column(modifier = Modifier.fillMaxSize()) {
-        AppTopBar(titulo = "Agenda", subtitulo = "$sedeTexto · Sincronizado con Sysmedical", iconoSubtitulo = Icons.Outlined.CalendarToday)
+        AppTopBar(titulo = "Agenda", subtitulo = subtitulo, iconoSubtitulo = Icons.Outlined.CalendarToday)
         TabRow(selectedTabIndex = uiState.vista.ordinal, containerColor = MaterialTheme.colorScheme.surface) {
             Tab(selected = uiState.vista == VistaAgenda.DIA, onClick = { viewModel.cambiarVista(VistaAgenda.DIA) }, text = { Text("Día") }, unselectedContentColor = TextoSecundario)
             Tab(selected = uiState.vista == VistaAgenda.SEMANA, onClick = { viewModel.cambiarVista(VistaAgenda.SEMANA) }, text = { Text("Semana") }, unselectedContentColor = TextoSecundario)
@@ -183,6 +185,9 @@ private fun FiltroSedes(sedeFiltro: Sede?, onSeleccionar: (Sede?) -> Unit) {
 
 private fun LazyListScope.listaDia(uiState: AgendaUiState, onVerCita: (String) -> Unit) {
     val pendientes = uiState.citas.filter { it.estado != EstadoCita.ATENDIDA }
+    // Las que ya pasaron sin registrar no son "próximas": quedan como pendientes de registro
+    val porRegistrar = pendientes.filter { yaPaso(uiState, it) }
+    val proximas = pendientes.filterNot { yaPaso(uiState, it) }
     val atendidas = uiState.citas.filter { it.estado == EstadoCita.ATENDIDA }
 
     item {
@@ -201,9 +206,9 @@ private fun LazyListScope.listaDia(uiState: AgendaUiState, onVerCita: (String) -
         item { EstadoVacio("Sin citas para este día", Icons.Outlined.EventBusy) }
         return
     }
-    if (pendientes.isNotEmpty()) {
+    if (proximas.isNotEmpty()) {
         item { SeccionTitulo("PRÓXIMAS ATENCIONES", modifier = Modifier.padding(horizontal = 16.dp)) }
-        items(pendientes, key = { it.id }) { cita ->
+        items(proximas, key = { it.id }) { cita ->
             CitaCard(
                 cita = cita,
                 onClick = { onVerCita(cita.id) },
@@ -211,6 +216,12 @@ private fun LazyListScope.listaDia(uiState: AgendaUiState, onVerCita: (String) -
                 etiquetaTiempo = etiquetaTiempo(uiState, cita),
                 modifier = Modifier.padding(horizontal = 16.dp)
             )
+        }
+    }
+    if (porRegistrar.isNotEmpty()) {
+        item { SeccionTitulo("PENDIENTES DE REGISTRO (${porRegistrar.size})", modifier = Modifier.padding(horizontal = 16.dp)) }
+        items(porRegistrar, key = { it.id }) { cita ->
+            CitaCard(cita = cita, onClick = { onVerCita(cita.id) }, detallada = true, modifier = Modifier.padding(horizontal = 16.dp))
         }
     }
     if (atendidas.isNotEmpty()) {
@@ -254,6 +265,9 @@ private fun LazyListScope.listaSemana(uiState: AgendaUiState, onVerCita: (String
         }
     }
 }
+
+private fun yaPaso(uiState: AgendaUiState, cita: Cita): Boolean =
+    cita.fecha.isBefore(uiState.hoy) || (cita.fecha == uiState.hoy && cita.hora.isBefore(uiState.horaActual))
 
 private fun etiquetaTiempo(uiState: AgendaUiState, cita: Cita): String? {
     if (cita.fecha != uiState.hoy) return null

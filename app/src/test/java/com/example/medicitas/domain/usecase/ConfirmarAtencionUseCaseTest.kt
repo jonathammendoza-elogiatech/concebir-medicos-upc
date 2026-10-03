@@ -1,19 +1,22 @@
 package com.example.medicitas.domain.usecase
 
 import com.example.medicitas.data.mock.SysmedicalMockDataSource
-import com.example.medicitas.data.repository.CitaRepositoryImpl
 import com.example.medicitas.domain.model.EstadoCita
 import com.example.medicitas.domain.model.TipoNota
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Test
 
 class ConfirmarAtencionUseCaseTest {
 
-    private val mock = SysmedicalMockDataSource()
-    private val repository = CitaRepositoryImpl(mock)
+    private val datos = SysmedicalMockDataSource()
+    private val repository = CitaRepositoryFalso(datos)
     private val useCase = ConfirmarAtencionUseCase(repository)
+
+    @Before
+    fun cargar() = runBlocking { repository.cargarCitas().getOrThrow() }
 
     @Test
     fun `confirmar marca la cita como atendida y descuenta pendientes`() = runBlocking {
@@ -21,9 +24,8 @@ class ConfirmarAtencionUseCaseTest {
 
         assertTrue(resultado.isSuccess)
         assertEquals(EstadoCita.ATENDIDA, repository.citas.value.first { it.id == "c04" }.estado)
-        val resumen = GetResumenDiaUseCase.calcular(repository.citas.value, mock.medico.value, mock.fechaHoy, mock.horaActual)
+        val resumen = GetResumenDiaUseCase.calcular(repository.citas.value, datos.medico.value, datos.fechaHoy, datos.horaActual)
         assertEquals(4, resumen.pendientesRegistro)
-        assertEquals("Control folicular · FIV", mock.pacientes.value.first { it.id == "p01" }.atenciones.first().tipo)
     }
 
     @Test

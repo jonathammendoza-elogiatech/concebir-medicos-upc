@@ -51,6 +51,7 @@ import com.example.medicitas.presentation.common.AppTopBar
 import com.example.medicitas.presentation.common.AvatarIniciales
 import com.example.medicitas.presentation.common.SeccionTitulo
 import com.example.medicitas.presentation.common.TarjetaClinica
+import com.example.medicitas.presentation.common.versionApp
 import com.example.medicitas.ui.theme.EstadoAtendida
 import com.example.medicitas.ui.theme.PetroleoClaro
 import com.example.medicitas.ui.theme.TextoSecundario
@@ -125,7 +126,7 @@ fun PerfilScreen(
                         Text("Acerca de la aplicación", style = MaterialTheme.typography.titleSmall)
                         Text("Concebir Médicos · SERPROSA", style = MaterialTheme.typography.bodySmall, color = TextoSecundario)
                     }
-                    Text("v1.0", style = MaterialTheme.typography.labelMedium, color = TextoSecundario)
+                    Text("v${versionApp()}", style = MaterialTheme.typography.labelMedium, color = TextoSecundario)
                     Icon(Icons.Outlined.ChevronRight, contentDescription = null, tint = TextoSecundario)
                 }
             }
@@ -171,7 +172,7 @@ private fun EncabezadoMedico(medico: Medico) {
             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 Box(Modifier.size(8.dp).background(EstadoAtendida, CircleShape))
                 Spacer(Modifier.width(6.dp))
-                Text("Activa · SERPROSA", style = MaterialTheme.typography.labelMedium, color = EstadoAtendida, modifier = Modifier.weight(1f))
+                Text("Sesión activa", style = MaterialTheme.typography.labelMedium, color = EstadoAtendida, modifier = Modifier.weight(1f))
                 Text("Sede ${medico.sedeActiva.nombre}", style = MaterialTheme.typography.labelMedium, color = TextoSecundario)
             }
         }

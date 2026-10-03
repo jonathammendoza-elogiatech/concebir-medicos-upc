@@ -61,6 +61,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.medicitas.presentation.common.TarjetaClinica
+import com.example.medicitas.presentation.common.versionApp
 import com.example.medicitas.ui.theme.EstadoAlertaFondo
 import com.example.medicitas.ui.theme.PetroleoClaro
 import com.example.medicitas.ui.theme.TextoSecundario
@@ -88,7 +89,7 @@ fun LoginScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Row(modifier = Modifier.fillMaxWidth()) {
-            Insignia(icono = Icons.Outlined.Lock, texto = "CIFRADO CLÍNICO TLS 1.3")
+            Insignia(icono = Icons.Outlined.Lock, texto = "CONEXIÓN CIFRADA")
         }
         Spacer(Modifier.height(32.dp))
 
@@ -126,7 +127,7 @@ fun LoginScreen(
                 onValueChange = viewModel::onCmpChange,
                 label = { Text("Código CMP") },
                 supportingText = { Text("Colegio Médico del Perú") },
-                placeholder = { Text("Ej. 45782") },
+                placeholder = { Text("Ej. 012345") },
                 leadingIcon = { Icon(Icons.Outlined.Badge, contentDescription = null) },
                 singleLine = true,
                 isError = uiState.error != null,
@@ -183,20 +184,22 @@ fun LoginScreen(
                     Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, modifier = Modifier.size(18.dp))
                 }
             }
-            Row(modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp), verticalAlignment = Alignment.CenterVertically) {
-                HorizontalDivider(modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.outline)
-                Text("o", style = MaterialTheme.typography.bodySmall, color = TextoSecundario, modifier = Modifier.padding(horizontal = 12.dp))
-                HorizontalDivider(modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.outline)
-            }
-            FilledTonalButton(
-                onClick = { viewModel.mostrarBiometria(true) },
-                enabled = !uiState.cargando,
-                shape = RoundedCornerShape(10.dp),
-                modifier = Modifier.fillMaxWidth().height(48.dp)
-            ) {
-                Icon(Icons.Filled.Fingerprint, contentDescription = null)
-                Spacer(Modifier.width(8.dp))
-                Text("Ingresar con biometría", style = MaterialTheme.typography.labelLarge)
+            if (uiState.biometriaDisponible) {
+                Row(modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp), verticalAlignment = Alignment.CenterVertically) {
+                    HorizontalDivider(modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.outline)
+                    Text("o", style = MaterialTheme.typography.bodySmall, color = TextoSecundario, modifier = Modifier.padding(horizontal = 12.dp))
+                    HorizontalDivider(modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.outline)
+                }
+                FilledTonalButton(
+                    onClick = { viewModel.mostrarBiometria(true) },
+                    enabled = !uiState.cargando,
+                    shape = RoundedCornerShape(10.dp),
+                    modifier = Modifier.fillMaxWidth().height(48.dp)
+                ) {
+                    Icon(Icons.Filled.Fingerprint, contentDescription = null)
+                    Spacer(Modifier.width(8.dp))
+                    Text("Ingresar con biometría", style = MaterialTheme.typography.labelLarge)
+                }
             }
         }
 
@@ -204,13 +207,18 @@ fun LoginScreen(
         Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(Icons.Outlined.Verified, contentDescription = null, tint = MaterialTheme.colorScheme.secondary, modifier = Modifier.size(16.dp))
             Spacer(Modifier.width(6.dp))
-            Text("Autenticación biométrica habilitada · Clave como respaldo", style = MaterialTheme.typography.bodySmall, color = TextoSecundario)
+            val avisoBiometria = if (uiState.biometriaDisponible) {
+                "Biometría activa en este dispositivo · Clave como respaldo"
+            } else {
+                "Marca \"Recordar mi usuario\" para ingresar con biometría la próxima vez"
+            }
+            Text(avisoBiometria, style = MaterialTheme.typography.bodySmall, color = TextoSecundario)
         }
         Spacer(Modifier.height(32.dp))
         HorizontalDivider(color = MaterialTheme.colorScheme.outline)
         Spacer(Modifier.height(12.dp))
         Text(
-            "SERPROSA · Clínica Concebir\nv1.0 · Acceso seguro",
+            "SERPROSA · Clínica Concebir\nv${versionApp()} · Acceso seguro",
             style = MaterialTheme.typography.bodySmall,
             color = TextoSecundario,
             textAlign = TextAlign.Center

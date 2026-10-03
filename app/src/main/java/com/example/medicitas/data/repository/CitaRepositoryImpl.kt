@@ -1,5 +1,6 @@
 package com.example.medicitas.data.repository
 
+import com.example.medicitas.data.local.RelojClinica
 import com.example.medicitas.data.remote.api.CitaApiService
 import com.example.medicitas.data.remote.dto.AtencionRequestDto
 import com.example.medicitas.data.remote.dto.datosOError
@@ -22,12 +23,15 @@ class CitaRepositoryImpl @Inject constructor(
     private val _citas = MutableStateFlow<List<Cita>>(emptyList())
     override val citas: StateFlow<List<Cita>> = _citas.asStateFlow()
 
-    // Jueves fijo del prototipo: los datos de ejemplo del API están en esa semana
-    override val fechaHoy: LocalDate = LocalDate.of(2026, 9, 24)
-    override val horaActual: LocalTime = LocalTime.of(10, 15)
+    private val _actualizadoA = MutableStateFlow<LocalTime?>(null)
+    override val actualizadoA: StateFlow<LocalTime?> = _actualizadoA.asStateFlow()
+
+    override val fechaHoy: LocalDate get() = RelojClinica.hoy()
+    override val horaActual: LocalTime get() = RelojClinica.ahora()
 
     override suspend fun cargarCitas(): Result<Unit> = runCatching {
         _citas.value = apiCita.getCitas().datosOError().items.map { it.toDomain() }
+        _actualizadoA.value = RelojClinica.ahora()
     }
 
     override suspend fun getCita(id: String): Result<Cita> = runCatching {

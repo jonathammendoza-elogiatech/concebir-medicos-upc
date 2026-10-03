@@ -14,6 +14,7 @@ class GetAgendaUseCase @Inject constructor(private val repository: CitaRepositor
 
     val fechaHoy: LocalDate get() = repository.fechaHoy
     val horaActual: LocalTime get() = repository.horaActual
+    val actualizadoA: StateFlow<LocalTime?> get() = repository.actualizadoA
 
     operator fun invoke(): StateFlow<List<Cita>> = repository.citas
 

@@ -46,6 +46,8 @@ class AuthRepositoryImpl @Inject constructor(
 
     override fun getCmpRecordado(): String? = sesionPreferences.cmpRecordado
 
+    override fun tieneSesionGuardada(): Boolean = sesionPreferences.refreshTokenCifrado != null
+
     override suspend fun logout(): Result<Unit> = runCatching {
         sesionManager.cerrar()
     }

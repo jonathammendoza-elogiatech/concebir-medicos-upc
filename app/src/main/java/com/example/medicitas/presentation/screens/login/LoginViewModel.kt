@@ -2,6 +2,7 @@ package com.example.medicitas.presentation.screens.login
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.medicitas.domain.usecase.GetBiometriaDisponibleUseCase
 import com.example.medicitas.domain.usecase.GetCmpRecordadoUseCase
 import com.example.medicitas.domain.usecase.LoginBiometricoUseCase
 import com.example.medicitas.domain.usecase.LoginUseCase
@@ -21,6 +22,7 @@ data class LoginUiState(
     val cargando: Boolean = false,
     val error: String? = null,
     val mostrarBiometria: Boolean = false,
+    val biometriaDisponible: Boolean = false,
     val sesionIniciada: Boolean = false
 ) {
     val puedeIngresar: Boolean get() = cmp.isNotBlank() && contrasena.isNotBlank() && !cargando
@@ -30,10 +32,11 @@ data class LoginUiState(
 class LoginViewModel @Inject constructor(
     private val loginUseCase: LoginUseCase,
     private val loginBiometricoUseCase: LoginBiometricoUseCase,
-    getCmpRecordadoUseCase: GetCmpRecordadoUseCase
+    getCmpRecordadoUseCase: GetCmpRecordadoUseCase,
+    getBiometriaDisponibleUseCase: GetBiometriaDisponibleUseCase
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow(LoginUiState())
+    private val _uiState = MutableStateFlow(LoginUiState(biometriaDisponible = getBiometriaDisponibleUseCase()))
     val uiState: StateFlow<LoginUiState> = _uiState.asStateFlow()
 
     init {

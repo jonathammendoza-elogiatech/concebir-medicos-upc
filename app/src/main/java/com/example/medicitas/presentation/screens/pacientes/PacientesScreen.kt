@@ -160,7 +160,7 @@ private fun FilaPaciente(paciente: Paciente, onClick: () -> Unit) {
                     color = TextoSecundario
                 )
                 EstadoChip(
-                    texto = paciente.resumenTratamiento,
+                    texto = paciente.tratamiento?.let { "${it.protocolo} Ciclo ${it.ciclo} · Día ${it.dia}" } ?: paciente.resumenTratamiento,
                     colores = if (enTratamiento) {
                         ColoresEstado(EstadoConfirmada, EstadoConfirmadaFondo, MaterialTheme.colorScheme.secondary)
                     } else {

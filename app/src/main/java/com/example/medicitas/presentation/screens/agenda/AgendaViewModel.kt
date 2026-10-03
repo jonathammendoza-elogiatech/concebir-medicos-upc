@@ -31,7 +31,8 @@ data class AgendaUiState(
     val fechaSeleccionada: LocalDate = hoy,
     val sedeFiltro: Sede? = sedeActiva,
     val citas: List<Cita> = emptyList(),
-    val diasConCitas: Set<LocalDate> = emptySet()
+    val diasConCitas: Set<LocalDate> = emptySet(),
+    val actualizadoA: LocalTime? = null
 )
 
 private data class FiltrosAgenda(val vista: VistaAgenda, val fecha: LocalDate, val sede: Sede?)
@@ -49,7 +50,7 @@ class AgendaViewModel @Inject constructor(
     )
 
     val uiState: StateFlow<AgendaUiState> =
-        combine(getAgendaUseCase(), medico, filtros) { citas, medico, filtros ->
+        combine(getAgendaUseCase(), medico, filtros, getAgendaUseCase.actualizadoA) { citas, medico, filtros, actualizadoA ->
             AgendaUiState(
                 hoy = getAgendaUseCase.fechaHoy,
                 horaActual = getAgendaUseCase.horaActual,
@@ -58,7 +59,8 @@ class AgendaViewModel @Inject constructor(
                 fechaSeleccionada = filtros.fecha,
                 sedeFiltro = filtros.sede,
                 citas = GetAgendaUseCase.filtrar(citas, filtros.fecha, filtros.vista == VistaAgenda.SEMANA, filtros.sede),
-                diasConCitas = citas.filter { filtros.sede == null || it.sede == filtros.sede }.map { it.fecha }.toSet()
+                diasConCitas = citas.filter { filtros.sede == null || it.sede == filtros.sede }.map { it.fecha }.toSet(),
+                actualizadoA = actualizadoA
             )
         }.stateIn(
             viewModelScope,

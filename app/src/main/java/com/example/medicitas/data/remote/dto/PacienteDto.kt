@@ -1,5 +1,6 @@
 package com.example.medicitas.data.remote.dto
 
+import com.example.medicitas.data.local.RelojClinica
 import com.example.medicitas.domain.model.Antecedentes
 import com.example.medicitas.domain.model.Atencion
 import com.example.medicitas.domain.model.EstadoTratamiento
@@ -8,6 +9,7 @@ import com.example.medicitas.domain.model.Tratamiento
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
+import java.time.temporal.ChronoUnit
 
 data class PacienteDto(
     val id: String?,
@@ -59,20 +61,21 @@ data class PacienteDto(
 data class TratamientoDto(
     val protocolo: String?,
     val ciclo: Int?,
-    val dia: Int?,
     val esquema: String?,
     val medicacion: String?,
     val inicio: String?,
     val medicoResponsable: String?
 ) {
     fun toDomain(): Tratamiento {
+        val fechaInicio = LocalDate.parse(inicio.orEmpty())
         return Tratamiento(
             protocolo = protocolo.orEmpty(),
             ciclo = ciclo ?: 0,
-            dia = dia ?: 0,
+            // El día del ciclo se calcula desde el inicio, para que no quede desactualizado
+            dia = ChronoUnit.DAYS.between(fechaInicio, RelojClinica.hoy()).toInt() + 1,
             esquema = esquema.orEmpty(),
             medicacion = medicacion.orEmpty(),
-            inicio = LocalDate.parse(inicio.orEmpty()),
+            inicio = fechaInicio,
             medicoResponsable = medicoResponsable.orEmpty()
         )
     }
