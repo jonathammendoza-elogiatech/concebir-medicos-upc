@@ -1,7 +1,13 @@
 package com.example.medicitas.di
 
+import com.example.medicitas.data.local.SesionCipher
+import com.example.medicitas.data.local.SesionManager
 import com.example.medicitas.data.local.SesionPreferences
-import com.example.medicitas.data.mock.SysmedicalMockDataSource
+import com.example.medicitas.data.remote.api.CitaApiService
+import com.example.medicitas.data.remote.api.CognitoApiService
+import com.example.medicitas.data.remote.api.MedicoApiService
+import com.example.medicitas.data.remote.api.PacienteApiService
+import com.example.medicitas.data.remote.api.ResultadoApiService
 import com.example.medicitas.data.repository.AuthRepositoryImpl
 import com.example.medicitas.data.repository.CitaRepositoryImpl
 import com.example.medicitas.data.repository.MedicoRepositoryImpl
@@ -18,38 +24,43 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
-// Mientras no exista el servicio REST (E6), los repositorios leen del mock de Sysmedical
+// Los repositorios consumen el servicio REST (E6): API Gateway + Lambda + DynamoDB, login con Cognito
 @Module
 @InstallIn(SingletonComponent::class)
 object RepositoryModule {
 
     @Provides
     @Singleton
-    fun provideAuthRepository(dataSource: SysmedicalMockDataSource, sesionPreferences: SesionPreferences): AuthRepository {
-        return AuthRepositoryImpl(dataSource, sesionPreferences)
+    fun provideAuthRepository(
+        cognitoApiService: CognitoApiService,
+        sesionManager: SesionManager,
+        sesionPreferences: SesionPreferences,
+        sesionCipher: SesionCipher
+    ): AuthRepository {
+        return AuthRepositoryImpl(cognitoApiService, sesionManager, sesionPreferences, sesionCipher)
     }
 
     @Provides
     @Singleton
-    fun provideMedicoRepository(dataSource: SysmedicalMockDataSource): MedicoRepository {
-        return MedicoRepositoryImpl(dataSource)
+    fun provideMedicoRepository(medicoApiService: MedicoApiService): MedicoRepository {
+        return MedicoRepositoryImpl(medicoApiService)
     }
 
     @Provides
     @Singleton
-    fun provideCitaRepository(dataSource: SysmedicalMockDataSource): CitaRepository {
-        return CitaRepositoryImpl(dataSource)
+    fun provideCitaRepository(citaApiService: CitaApiService): CitaRepository {
+        return CitaRepositoryImpl(citaApiService)
     }
 
     @Provides
     @Singleton
-    fun providePacienteRepository(dataSource: SysmedicalMockDataSource): PacienteRepository {
-        return PacienteRepositoryImpl(dataSource)
+    fun providePacienteRepository(pacienteApiService: PacienteApiService): PacienteRepository {
+        return PacienteRepositoryImpl(pacienteApiService)
     }
 
     @Provides
     @Singleton
-    fun provideResultadoRepository(dataSource: SysmedicalMockDataSource): ResultadoRepository {
-        return ResultadoRepositoryImpl(dataSource)
+    fun provideResultadoRepository(resultadoApiService: ResultadoApiService): ResultadoRepository {
+        return ResultadoRepositoryImpl(resultadoApiService)
     }
 }

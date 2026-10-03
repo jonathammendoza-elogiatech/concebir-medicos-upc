@@ -10,6 +10,7 @@ interface CitaRepository {
     val citas: StateFlow<List<Cita>>
     val fechaHoy: LocalDate
     val horaActual: LocalTime
+    suspend fun cargarCitas(): Result<Unit>
     suspend fun getCita(id: String): Result<Cita>
     suspend fun registrarAtencion(citaId: String, tipoNota: TipoNota, nota: String, marcarAtendida: Boolean): Result<Unit>
 }

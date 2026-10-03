@@ -67,7 +67,7 @@ class LoginViewModel @Inject constructor(
         viewModelScope.launch {
             loginUseCase(estado.cmp, estado.contrasena, estado.recordarUsuario)
                 .onSuccess { _uiState.update { it.copy(cargando = false, sesionIniciada = true) } }
-                .onFailure { _uiState.update { it.copy(cargando = false, error = MENSAJE_CREDENCIALES) } }
+                .onFailure { e -> _uiState.update { it.copy(cargando = false, error = e.message ?: MENSAJE_CREDENCIALES) } }
         }
     }
 
@@ -80,7 +80,7 @@ class LoginViewModel @Inject constructor(
         viewModelScope.launch {
             loginBiometricoUseCase()
                 .onSuccess { _uiState.update { it.copy(cargando = false, sesionIniciada = true) } }
-                .onFailure { _uiState.update { it.copy(cargando = false, error = "No se pudo validar tu biometría") } }
+                .onFailure { e -> _uiState.update { it.copy(cargando = false, error = e.message ?: "No se pudo validar tu biometría") } }
         }
     }
 

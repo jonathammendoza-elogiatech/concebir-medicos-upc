@@ -15,8 +15,14 @@ class SesionPreferences @Inject constructor(@ApplicationContext context: Context
         get() = prefs.getString(KEY_CMP, null)
         set(value) = prefs.edit { if (value == null) remove(KEY_CMP) else putString(KEY_CMP, value) }
 
+    // Cifrado con SesionCipher; permite ingresar con biometría sin volver a escribir la contraseña
+    var refreshTokenCifrado: String?
+        get() = prefs.getString(KEY_REFRESH, null)
+        set(value) = prefs.edit { if (value == null) remove(KEY_REFRESH) else putString(KEY_REFRESH, value) }
+
     private companion object {
         const val NOMBRE = "sesion_medicitas"
         const val KEY_CMP = "cmp_recordado"
+        const val KEY_REFRESH = "refresh_token_cifrado"
     }
 }

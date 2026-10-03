@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.StateFlow
 
 interface MedicoRepository {
     val medico: StateFlow<Medico>
+    suspend fun cargarPerfil(): Result<Unit>
     suspend fun cambiarSede(sede: Sede): Result<Unit>
     suspend fun cambiarNotificaciones(activas: Boolean): Result<Unit>
 }
