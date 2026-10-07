@@ -3,7 +3,6 @@ package com.example.medicitas.presentation.screens.ficha
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.medicitas.domain.model.Paciente
 import com.example.medicitas.domain.usecase.GetFichaPacienteUseCase
 import com.example.medicitas.presentation.navigation.RutasNav
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -13,15 +12,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-
-enum class PestanaFicha(val titulo: String) { DATOS("Datos"), ANTECEDENTES("Antecedentes"), HISTORIAL("Historial") }
-
-data class FichaPacienteUiState(
-    val cargando: Boolean = true,
-    val paciente: Paciente? = null,
-    val pestana: PestanaFicha = PestanaFicha.DATOS,
-    val error: String? = null
-)
 
 @HiltViewModel
 class FichaPacienteViewModel @Inject constructor(
@@ -42,5 +32,9 @@ class FichaPacienteViewModel @Inject constructor(
         }
     }
 
-    fun seleccionarPestana(pestana: PestanaFicha) = _uiState.update { it.copy(pestana = pestana) }
+    fun onEvent(event: FichaPacienteEvent) {
+        when (event) {
+            is FichaPacienteEvent.SeleccionarPestana -> _uiState.update { it.copy(pestana = event.pestana) }
+        }
+    }
 }

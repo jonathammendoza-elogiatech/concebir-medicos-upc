@@ -74,10 +74,23 @@ fun RegistrarAtencionScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    LaunchedEffect(uiState.registrada) {
-        if (uiState.registrada) onRegistrada()
+    LaunchedEffect(Unit) {
+        viewModel.effects.collect { efecto ->
+            when (efecto) {
+                RegistrarAtencionEffect.Registrada -> onRegistrada()
+            }
+        }
     }
 
+    RegistrarAtencionContent(uiState = uiState, onEvent = viewModel::onEvent, onBack = onBack)
+}
+
+@Composable
+private fun RegistrarAtencionContent(
+    uiState: RegistrarAtencionUiState,
+    onEvent: (RegistrarAtencionEvent) -> Unit,
+    onBack: () -> Unit
+) {
     val detalle = uiState.detalle
     val tratamiento = detalle?.paciente?.tratamiento
     Column(modifier = Modifier.fillMaxSize().imePadding()) {
@@ -136,18 +149,23 @@ fun RegistrarAtencionScreen(
                             Text("Tipo de nota", style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
                             Text("Obligatorio", style = MaterialTheme.typography.labelMedium, color = TextoTerciario)
                         }
-                        SelectorTipoNota(uiState.tipoNota, viewModel::seleccionarTipo)
+                        SelectorTipoNota(uiState.tipoNota) { onEvent(RegistrarAtencionEvent.SeleccionarTipo(it)) }
                     }
 
-                    CampoNota(uiState.nota, uiState.tipoNota, viewModel::onNotaChange, viewModel::insertarFragmento)
+                    CampoNota(
+                        uiState.nota,
+                        uiState.tipoNota,
+                        onNotaChange = { onEvent(RegistrarAtencionEvent.NotaChange(it)) },
+                        onInsertar = { onEvent(RegistrarAtencionEvent.InsertarFragmento(it)) }
+                    )
 
                     TarjetaClinica(
                         modifier = Modifier.fillMaxWidth(),
-                        onClick = { viewModel.onMarcarAtendidaChange(!uiState.marcarAtendida) },
+                        onClick = { onEvent(RegistrarAtencionEvent.MarcarAtendidaChange(!uiState.marcarAtendida)) },
                         contentPadding = 12.dp
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Checkbox(checked = uiState.marcarAtendida, onCheckedChange = viewModel::onMarcarAtendidaChange)
+                            Checkbox(checked = uiState.marcarAtendida, onCheckedChange = { onEvent(RegistrarAtencionEvent.MarcarAtendidaChange(it)) })
                             Column {
                                 Text("Marcar la atención como realizada", style = MaterialTheme.typography.titleSmall)
                                 Text(
@@ -172,7 +190,7 @@ fun RegistrarAtencionScreen(
                             Text("Cancelar", style = MaterialTheme.typography.labelLarge)
                         }
                         Button(
-                            onClick = viewModel::solicitarFirma,
+                            onClick = { onEvent(RegistrarAtencionEvent.SolicitarFirma) },
                             enabled = uiState.puedeGuardar,
                             modifier = Modifier.weight(1.4f).height(48.dp),
                             shape = RoundedCornerShape(10.dp)
@@ -190,10 +208,10 @@ fun RegistrarAtencionScreen(
     if (uiState.firma != EstadoFirma.OCULTA && detalle != null) {
         FirmaBiometricaSheet(
             uiState = uiState,
-            onCancelar = viewModel::cancelarFirma,
-            onFirmar = viewModel::firmar,
-            onAlternarContrasena = viewModel::alternarContrasena,
-            onContrasenaChange = viewModel::onContrasenaChange
+            onCancelar = { onEvent(RegistrarAtencionEvent.CancelarFirma) },
+            onFirmar = { onEvent(RegistrarAtencionEvent.Firmar) },
+            onAlternarContrasena = { onEvent(RegistrarAtencionEvent.AlternarContrasena) },
+            onContrasenaChange = { onEvent(RegistrarAtencionEvent.ContrasenaChange(it)) }
         )
     }
 }

@@ -62,13 +62,22 @@ fun PerfilScreen(
     onSesionCerrada: () -> Unit,
     viewModel: PerfilViewModel = hiltViewModel()
 ) {
-    val medico by viewModel.medico.collectAsStateWithLifecycle()
-    val sesionCerrada by viewModel.sesionCerrada.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    LaunchedEffect(sesionCerrada) {
-        if (sesionCerrada) onSesionCerrada()
+    LaunchedEffect(Unit) {
+        viewModel.effects.collect { efecto ->
+            when (efecto) {
+                PerfilEffect.SesionCerrada -> onSesionCerrada()
+            }
+        }
     }
 
+    PerfilContent(uiState = uiState, onEvent = viewModel::onEvent)
+}
+
+@Composable
+private fun PerfilContent(uiState: PerfilUiState, onEvent: (PerfilEvent) -> Unit) {
+    val medico = uiState.medico
     Column(modifier = Modifier.fillMaxSize()) {
         AppTopBar(titulo = "Perfil") {
             IconButton(onClick = {}) { Icon(Icons.Outlined.Notifications, contentDescription = "Notificaciones") }
@@ -95,7 +104,7 @@ fun PerfilScreen(
                     Text("Sede activa", style = MaterialTheme.typography.titleMedium)
                 }
                 Spacer(Modifier.height(12.dp))
-                SelectorSede(sedeActiva = medico.sedeActiva, onSeleccionar = viewModel::cambiarSede)
+                SelectorSede(sedeActiva = medico.sedeActiva, onSeleccionar = { onEvent(PerfilEvent.CambiarSede(it)) })
                 Spacer(Modifier.height(12.dp))
                 Text(
                     "Cambiar la sede filtra tu agenda y lista de pacientes en toda la app.",
@@ -114,7 +123,7 @@ fun PerfilScreen(
                     Spacer(Modifier.width(12.dp))
                     Switch(
                         checked = medico.notificacionesAgenda,
-                        onCheckedChange = viewModel::cambiarNotificaciones,
+                        onCheckedChange = { onEvent(PerfilEvent.CambiarNotificaciones(it)) },
                         thumbContent = if (medico.notificacionesAgenda) {
                             { Icon(Icons.Filled.Check, contentDescription = null, modifier = Modifier.size(SwitchDefaults.IconSize)) }
                         } else null
@@ -131,7 +140,7 @@ fun PerfilScreen(
                 }
             }
 
-            TextButton(onClick = viewModel::cerrarSesion, modifier = Modifier.align(Alignment.CenterHorizontally)) {
+            TextButton(onClick = { onEvent(PerfilEvent.CerrarSesion) }, modifier = Modifier.align(Alignment.CenterHorizontally)) {
                 Icon(Icons.AutoMirrored.Outlined.Logout, contentDescription = null, tint = MaterialTheme.colorScheme.error)
                 Spacer(Modifier.width(8.dp))
                 Text("Cerrar sesión", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.error)

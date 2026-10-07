@@ -1,18 +1,23 @@
 package com.example.medicitas.presentation.screens.perfil
 
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.medicitas.domain.model.Medico
 import com.example.medicitas.domain.model.Sede
 import com.example.medicitas.domain.usecase.CambiarNotificacionesUseCase
 import com.example.medicitas.domain.usecase.CambiarSedeUseCase
 import com.example.medicitas.domain.usecase.GetPerfilUseCase
 import com.example.medicitas.domain.usecase.LogoutUseCase
+import com.example.medicitas.presentation.common.SnackbarType
+import com.example.medicitas.presentation.event.UiEvent
+import com.example.medicitas.presentation.event.UiEventBus
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.receiveAsFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -21,33 +26,51 @@ class PerfilViewModel @Inject constructor(
     getPerfilUseCase: GetPerfilUseCase,
     private val cambiarSedeUseCase: CambiarSedeUseCase,
     private val cambiarNotificacionesUseCase: CambiarNotificacionesUseCase,
-    private val logoutUseCase: LogoutUseCase
+    private val logoutUseCase: LogoutUseCase,
+    private val eventBus: UiEventBus
 ) : ViewModel() {
 
-    val medico: StateFlow<Medico> = getPerfilUseCase()
+    private val medico = getPerfilUseCase()
 
-    private val _sesionCerrada = MutableStateFlow(false)
-    val sesionCerrada: StateFlow<Boolean> = _sesionCerrada.asStateFlow()
+    val uiState: StateFlow<PerfilUiState> = medico
+        .map { PerfilUiState(medico = it) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), PerfilUiState(medico = medico.value))
 
-    fun cambiarSede(sede: Sede) {
-        viewModelScope.launch {
-            cambiarSedeUseCase(sede).onFailure { Log.e(TAG, "Error cambiando sede", it) }
+    private val _effects = Channel<PerfilEffect>(Channel.BUFFERED)
+    val effects: Flow<PerfilEffect> = _effects.receiveAsFlow()
+
+    fun onEvent(event: PerfilEvent) {
+        when (event) {
+            is PerfilEvent.CambiarSede -> cambiarSede(event.sede)
+            is PerfilEvent.CambiarNotificaciones -> cambiarNotificaciones(event.activas)
+            PerfilEvent.CerrarSesion -> cerrarSesion()
         }
     }
 
-    fun cambiarNotificaciones(activas: Boolean) {
+    private fun cambiarSede(sede: Sede) {
         viewModelScope.launch {
-            cambiarNotificacionesUseCase(activas).onFailure { Log.e(TAG, "Error cambiando notificaciones", it) }
+            cambiarSedeUseCase(sede)
+                .onSuccess { mostrarMensaje("Sede activa: ${sede.nombre}", SnackbarType.SUCCESS) }
+                .onFailure { mostrarMensaje("No se pudo cambiar la sede", SnackbarType.ERROR) }
         }
     }
 
-    fun cerrarSesion() {
+    private fun cambiarNotificaciones(activas: Boolean) {
         viewModelScope.launch {
-            logoutUseCase().onSuccess { _sesionCerrada.value = true }
+            cambiarNotificacionesUseCase(activas)
+                .onSuccess { mostrarMensaje(if (activas) "Notificaciones activadas" else "Notificaciones desactivadas") }
+                .onFailure { mostrarMensaje("No se pudo actualizar las notificaciones", SnackbarType.ERROR) }
         }
     }
 
-    private companion object {
-        const val TAG = "PerfilViewModel"
+    private fun cerrarSesion() {
+        viewModelScope.launch {
+            logoutUseCase()
+                .onSuccess { _effects.send(PerfilEffect.SesionCerrada) }
+                .onFailure { mostrarMensaje("No se pudo cerrar sesión", SnackbarType.ERROR) }
+        }
     }
+
+    private suspend fun mostrarMensaje(mensaje: String, tipo: SnackbarType = SnackbarType.INFO) =
+        eventBus.sendEvent(UiEvent.ShowSnackbar(mensaje, tipo))
 }

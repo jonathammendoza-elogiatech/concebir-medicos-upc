@@ -2,7 +2,6 @@ package com.example.medicitas.presentation.screens.agenda
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.medicitas.domain.model.Cita
 import com.example.medicitas.domain.model.Sede
 import com.example.medicitas.domain.usecase.GetAgendaUseCase
 import com.example.medicitas.domain.usecase.GetPerfilUseCase
@@ -18,22 +17,7 @@ import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import java.time.LocalDate
-import java.time.LocalTime
 import javax.inject.Inject
-
-enum class VistaAgenda { DIA, SEMANA }
-
-data class AgendaUiState(
-    val hoy: LocalDate,
-    val horaActual: LocalTime,
-    val sedeActiva: Sede,
-    val vista: VistaAgenda = VistaAgenda.DIA,
-    val fechaSeleccionada: LocalDate = hoy,
-    val sedeFiltro: Sede? = sedeActiva,
-    val citas: List<Cita> = emptyList(),
-    val diasConCitas: Set<LocalDate> = emptySet(),
-    val actualizadoA: LocalTime? = null
-)
 
 private data class FiltrosAgenda(val vista: VistaAgenda, val fecha: LocalDate, val sede: Sede?)
 
@@ -76,9 +60,11 @@ class AgendaViewModel @Inject constructor(
             .launchIn(viewModelScope)
     }
 
-    fun cambiarVista(vista: VistaAgenda) = filtros.update { it.copy(vista = vista) }
-
-    fun seleccionarFecha(fecha: LocalDate) = filtros.update { it.copy(fecha = fecha) }
-
-    fun filtrarSede(sede: Sede?) = filtros.update { it.copy(sede = sede) }
+    fun onEvent(event: AgendaEvent) {
+        when (event) {
+            is AgendaEvent.CambiarVista -> filtros.update { it.copy(vista = event.vista) }
+            is AgendaEvent.SeleccionarFecha -> filtros.update { it.copy(fecha = event.fecha) }
+            is AgendaEvent.FiltrarSede -> filtros.update { it.copy(sede = event.sede) }
+        }
+    }
 }

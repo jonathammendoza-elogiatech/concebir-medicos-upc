@@ -66,11 +66,11 @@ fun InicioScreen(
     onVerAgenda: () -> Unit,
     viewModel: InicioViewModel = hiltViewModel()
 ) {
-    val resumen by viewModel.resumen.collectAsStateWithLifecycle()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     Column(modifier = Modifier.fillMaxSize()) {
-        val datos = resumen
-        if (datos == null) {
+        val datos = uiState.resumen
+        if (uiState.cargando || datos == null) {
             AppTopBar(titulo = "Resumen del día")
             CargandoContenido()
             return@Column

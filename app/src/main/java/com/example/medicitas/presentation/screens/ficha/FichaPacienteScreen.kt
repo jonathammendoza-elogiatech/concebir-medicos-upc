@@ -68,7 +68,16 @@ fun FichaPacienteScreen(
     viewModel: FichaPacienteViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    FichaPacienteContent(uiState = uiState, onEvent = viewModel::onEvent, onBack = onBack, onVerResultados = onVerResultados)
+}
 
+@Composable
+private fun FichaPacienteContent(
+    uiState: FichaPacienteUiState,
+    onEvent: (FichaPacienteEvent) -> Unit,
+    onBack: () -> Unit,
+    onVerResultados: (String) -> Unit
+) {
     Column(modifier = Modifier.fillMaxSize()) {
         AppTopBar(titulo = "Ficha del paciente", onBack = onBack)
         val paciente = uiState.paciente
@@ -81,7 +90,7 @@ fun FichaPacienteScreen(
                     PestanaFicha.entries.forEach { pestana ->
                         Tab(
                             selected = pestana == uiState.pestana,
-                            onClick = { viewModel.seleccionarPestana(pestana) },
+                            onClick = { onEvent(FichaPacienteEvent.SeleccionarPestana(pestana)) },
                             text = { Text(pestana.titulo) },
                             unselectedContentColor = TextoSecundario
                         )

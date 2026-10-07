@@ -62,7 +62,11 @@ fun PacientesScreen(
     viewModel: PacientesViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    PacientesContent(uiState = uiState, onEvent = viewModel::onEvent, onVerPaciente = onVerPaciente)
+}
 
+@Composable
+private fun PacientesContent(uiState: PacientesUiState, onEvent: (PacientesEvent) -> Unit, onVerPaciente: (String) -> Unit) {
     Column(modifier = Modifier.fillMaxSize()) {
         AppTopBar(titulo = "Pacientes", subtitulo = "Sede ${uiState.sede.nombre}")
         LazyColumn(
@@ -72,12 +76,12 @@ fun PacientesScreen(
             item {
                 OutlinedTextField(
                     value = uiState.consulta,
-                    onValueChange = viewModel::onConsultaChange,
+                    onValueChange = { onEvent(PacientesEvent.ConsultaChange(it)) },
                     placeholder = { Text("Buscar por nombre o DNI") },
                     leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null) },
                     trailingIcon = {
                         if (uiState.consulta.isNotEmpty()) {
-                            IconButton(onClick = { viewModel.onConsultaChange("") }) {
+                            IconButton(onClick = { onEvent(PacientesEvent.ConsultaChange("")) }) {
                                 Icon(Icons.Outlined.Close, contentDescription = "Limpiar búsqueda")
                             }
                         }
@@ -93,7 +97,7 @@ fun PacientesScreen(
                     modifier = Modifier.fillMaxWidth()
                 )
             }
-            item { FiltroEstado(uiState.filtroEstado, viewModel::filtrarEstado) }
+            item { FiltroEstado(uiState.filtroEstado) { onEvent(PacientesEvent.FiltrarEstado(it)) } }
             item {
                 Text(
                     "${uiState.totalAsignados} pacientes asignados",

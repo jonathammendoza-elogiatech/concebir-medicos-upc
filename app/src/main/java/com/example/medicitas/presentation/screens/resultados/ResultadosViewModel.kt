@@ -3,9 +3,6 @@ package com.example.medicitas.presentation.screens.resultados
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.medicitas.domain.model.Paciente
-import com.example.medicitas.domain.model.ResultadoExamen
-import com.example.medicitas.domain.model.TipoResultado
 import com.example.medicitas.domain.usecase.GetFichaPacienteUseCase
 import com.example.medicitas.domain.usecase.GetResultadosUseCase
 import com.example.medicitas.presentation.navigation.RutasNav
@@ -16,16 +13,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
-
-data class ResultadosUiState(
-    val cargando: Boolean = true,
-    val paciente: Paciente? = null,
-    val tipo: TipoResultado = TipoResultado.LABORATORIO,
-    val resultados: List<ResultadoExamen> = emptyList(),
-    val error: String? = null
-) {
-    val visibles: List<ResultadoExamen> get() = resultados.filter { it.tipo == tipo }
-}
 
 @HiltViewModel
 class ResultadosViewModel @Inject constructor(
@@ -48,5 +35,9 @@ class ResultadosViewModel @Inject constructor(
         }
     }
 
-    fun seleccionarTipo(tipo: TipoResultado) = _uiState.update { it.copy(tipo = tipo) }
+    fun onEvent(event: ResultadosEvent) {
+        when (event) {
+            is ResultadosEvent.SeleccionarTipo -> _uiState.update { it.copy(tipo = event.tipo) }
+        }
+    }
 }

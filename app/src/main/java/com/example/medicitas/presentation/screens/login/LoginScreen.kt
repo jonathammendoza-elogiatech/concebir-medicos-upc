@@ -73,10 +73,19 @@ fun LoginScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    LaunchedEffect(uiState.sesionIniciada) {
-        if (uiState.sesionIniciada) onLoginExitoso()
+    LaunchedEffect(Unit) {
+        viewModel.effects.collect { efecto ->
+            when (efecto) {
+                LoginEffect.SesionIniciada -> onLoginExitoso()
+            }
+        }
     }
 
+    LoginContent(uiState = uiState, onEvent = viewModel::onEvent)
+}
+
+@Composable
+private fun LoginContent(uiState: LoginUiState, onEvent: (LoginEvent) -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -124,7 +133,7 @@ fun LoginScreen(
 
             OutlinedTextField(
                 value = uiState.cmp,
-                onValueChange = viewModel::onCmpChange,
+                onValueChange = { onEvent(LoginEvent.CmpChange(it)) },
                 label = { Text("Código CMP") },
                 supportingText = { Text("Colegio Médico del Perú") },
                 placeholder = { Text("Ej. 012345") },
@@ -139,12 +148,12 @@ fun LoginScreen(
             Spacer(Modifier.height(12.dp))
             OutlinedTextField(
                 value = uiState.contrasena,
-                onValueChange = viewModel::onContrasenaChange,
+                onValueChange = { onEvent(LoginEvent.ContrasenaChange(it)) },
                 label = { Text("Contraseña") },
                 placeholder = { Text("Ingresa tu clave médica") },
                 leadingIcon = { Icon(Icons.Outlined.Lock, contentDescription = null) },
                 trailingIcon = {
-                    IconButton(onClick = viewModel::alternarVisibilidad) {
+                    IconButton(onClick = { onEvent(LoginEvent.AlternarVisibilidad) }) {
                         Icon(
                             if (uiState.mostrarContrasena) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility,
                             contentDescription = if (uiState.mostrarContrasena) "Ocultar contraseña" else "Mostrar contraseña"
@@ -155,14 +164,14 @@ fun LoginScreen(
                 isError = uiState.error != null,
                 visualTransformation = if (uiState.mostrarContrasena) VisualTransformation.None else PasswordVisualTransformation(),
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
-                keyboardActions = KeyboardActions(onDone = { viewModel.iniciarSesion() }),
+                keyboardActions = KeyboardActions(onDone = { onEvent(LoginEvent.IniciarSesion) }),
                 colors = coloresCampo(),
                 shape = RoundedCornerShape(10.dp),
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(Modifier.height(4.dp))
             Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Checkbox(checked = uiState.recordarUsuario, onCheckedChange = viewModel::onRecordarChange)
+                Checkbox(checked = uiState.recordarUsuario, onCheckedChange = { onEvent(LoginEvent.RecordarChange(it)) })
                 Text("Recordar mi usuario", style = MaterialTheme.typography.bodyMedium, maxLines = 1)
                 Spacer(Modifier.weight(1f))
             }
@@ -171,7 +180,7 @@ fun LoginScreen(
             }
             Spacer(Modifier.height(4.dp))
             Button(
-                onClick = viewModel::iniciarSesion,
+                onClick = { onEvent(LoginEvent.IniciarSesion) },
                 enabled = uiState.puedeIngresar,
                 shape = RoundedCornerShape(10.dp),
                 modifier = Modifier.fillMaxWidth().height(48.dp)
@@ -191,7 +200,7 @@ fun LoginScreen(
                     HorizontalDivider(modifier = Modifier.weight(1f), color = MaterialTheme.colorScheme.outline)
                 }
                 FilledTonalButton(
-                    onClick = { viewModel.mostrarBiometria(true) },
+                    onClick = { onEvent(LoginEvent.AbrirBiometria) },
                     enabled = !uiState.cargando,
                     shape = RoundedCornerShape(10.dp),
                     modifier = Modifier.fillMaxWidth().height(48.dp)
@@ -227,12 +236,12 @@ fun LoginScreen(
 
     if (uiState.mostrarBiometria) {
         AlertDialog(
-            onDismissRequest = { viewModel.mostrarBiometria(false) },
+            onDismissRequest = { onEvent(LoginEvent.CerrarBiometria) },
             icon = { Icon(Icons.Filled.Fingerprint, contentDescription = null, modifier = Modifier.size(40.dp), tint = MaterialTheme.colorScheme.primary) },
             title = { Text("Ingresar con biometría") },
             text = { Text("Toca el sensor para validar tu identidad.", textAlign = TextAlign.Center) },
-            confirmButton = { TextButton(onClick = viewModel::confirmarBiometria) { Text("Tocar sensor") } },
-            dismissButton = { TextButton(onClick = { viewModel.mostrarBiometria(false) }) { Text("Cancelar") } }
+            confirmButton = { TextButton(onClick = { onEvent(LoginEvent.ConfirmarBiometria) }) { Text("Tocar sensor") } },
+            dismissButton = { TextButton(onClick = { onEvent(LoginEvent.CerrarBiometria) }) { Text("Cancelar") } }
         )
     }
 }

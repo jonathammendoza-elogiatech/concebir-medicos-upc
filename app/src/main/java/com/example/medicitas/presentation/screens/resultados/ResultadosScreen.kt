@@ -66,6 +66,11 @@ fun ResultadosScreen(
     viewModel: ResultadosViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    ResultadosContent(uiState = uiState, onEvent = viewModel::onEvent, onBack = onBack)
+}
+
+@Composable
+private fun ResultadosContent(uiState: ResultadosUiState, onEvent: (ResultadosEvent) -> Unit, onBack: () -> Unit) {
     val paciente = uiState.paciente
 
     Column(modifier = Modifier.fillMaxSize()) {
@@ -77,13 +82,13 @@ fun ResultadosScreen(
         TabRow(selectedTabIndex = uiState.tipo.ordinal, containerColor = MaterialTheme.colorScheme.surface) {
             Tab(
                 selected = uiState.tipo == TipoResultado.LABORATORIO,
-                onClick = { viewModel.seleccionarTipo(TipoResultado.LABORATORIO) },
+                onClick = { onEvent(ResultadosEvent.SeleccionarTipo(TipoResultado.LABORATORIO)) },
                 text = { Text("Laboratorio") },
                 unselectedContentColor = TextoSecundario
             )
             Tab(
                 selected = uiState.tipo == TipoResultado.GENETICA,
-                onClick = { viewModel.seleccionarTipo(TipoResultado.GENETICA) },
+                onClick = { onEvent(ResultadosEvent.SeleccionarTipo(TipoResultado.GENETICA)) },
                 text = { Text("Genética") },
                 unselectedContentColor = TextoSecundario
             )

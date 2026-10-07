@@ -70,21 +70,26 @@ fun AgendaScreen(
     viewModel: AgendaViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    AgendaContent(uiState = uiState, onEvent = viewModel::onEvent, onVerCita = onVerCita)
+}
+
+@Composable
+private fun AgendaContent(uiState: AgendaUiState, onEvent: (AgendaEvent) -> Unit, onVerCita: (String) -> Unit) {
     val sedeTexto = uiState.sedeFiltro?.let { "Sede ${it.nombre}" } ?: "Todas las sedes"
     val subtitulo = listOfNotNull(sedeTexto, uiState.actualizadoA?.let { "Actualizado ${it.formatoHora()}" }).joinToString(" · ")
 
     Column(modifier = Modifier.fillMaxSize()) {
         AppTopBar(titulo = "Agenda", subtitulo = subtitulo, iconoSubtitulo = Icons.Outlined.CalendarToday)
         TabRow(selectedTabIndex = uiState.vista.ordinal, containerColor = MaterialTheme.colorScheme.surface) {
-            Tab(selected = uiState.vista == VistaAgenda.DIA, onClick = { viewModel.cambiarVista(VistaAgenda.DIA) }, text = { Text("Día") }, unselectedContentColor = TextoSecundario)
-            Tab(selected = uiState.vista == VistaAgenda.SEMANA, onClick = { viewModel.cambiarVista(VistaAgenda.SEMANA) }, text = { Text("Semana") }, unselectedContentColor = TextoSecundario)
+            Tab(selected = uiState.vista == VistaAgenda.DIA, onClick = { onEvent(AgendaEvent.CambiarVista(VistaAgenda.DIA)) }, text = { Text("Día") }, unselectedContentColor = TextoSecundario)
+            Tab(selected = uiState.vista == VistaAgenda.SEMANA, onClick = { onEvent(AgendaEvent.CambiarVista(VistaAgenda.SEMANA)) }, text = { Text("Semana") }, unselectedContentColor = TextoSecundario)
         }
         LazyColumn(
             contentPadding = PaddingValues(bottom = 16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            item { SelectorFecha(uiState, onSeleccionar = viewModel::seleccionarFecha) }
-            item { FiltroSedes(uiState.sedeFiltro, onSeleccionar = viewModel::filtrarSede) }
+            item { SelectorFecha(uiState, onSeleccionar = { onEvent(AgendaEvent.SeleccionarFecha(it)) }) }
+            item { FiltroSedes(uiState.sedeFiltro, onSeleccionar = { onEvent(AgendaEvent.FiltrarSede(it)) }) }
             if (uiState.vista == VistaAgenda.DIA) {
                 listaDia(uiState, onVerCita)
             } else {

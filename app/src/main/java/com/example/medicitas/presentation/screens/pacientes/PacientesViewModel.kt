@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.medicitas.domain.model.EstadoTratamiento
 import com.example.medicitas.domain.model.Paciente
-import com.example.medicitas.domain.model.Sede
 import com.example.medicitas.domain.usecase.BuscarPacientesUseCase
 import com.example.medicitas.domain.usecase.GetPerfilUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -17,17 +16,13 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-data class PacientesUiState(
-    val cargando: Boolean = true,
+// Estado propio de la pantalla; la sede llega del perfil y se combina al armar el UiState
+private data class BusquedaPacientes(
+    val todos: List<Paciente>? = null,
     val consulta: String = "",
-    val filtroEstado: EstadoTratamiento? = null,
-    val sede: Sede = Sede.SAN_ISIDRO,
-    val totalAsignados: Int = 0,
-    val pacientes: List<Paciente> = emptyList(),
+    val estado: EstadoTratamiento? = null,
     val error: String? = null
 )
-
-private data class Filtros(val consulta: String = "", val estado: EstadoTratamiento? = null)
 
 @HiltViewModel
 class PacientesViewModel @Inject constructor(
@@ -35,22 +30,20 @@ class PacientesViewModel @Inject constructor(
     getPerfilUseCase: GetPerfilUseCase
 ) : ViewModel() {
 
-    private val todos = MutableStateFlow<List<Paciente>?>(null)
-    private val filtros = MutableStateFlow(Filtros())
-    private val error = MutableStateFlow<String?>(null)
+    private val busqueda = MutableStateFlow(BusquedaPacientes())
     private val medico = getPerfilUseCase()
 
     val uiState: StateFlow<PacientesUiState> =
-        combine(todos, filtros, medico, error) { todos, filtros, medico, error ->
-            val lista = todos.orEmpty()
+        combine(busqueda, medico) { busqueda, medico ->
+            val lista = busqueda.todos.orEmpty()
             PacientesUiState(
-                cargando = todos == null && error == null,
-                consulta = filtros.consulta,
-                filtroEstado = filtros.estado,
+                cargando = busqueda.todos == null && busqueda.error == null,
+                consulta = busqueda.consulta,
+                filtroEstado = busqueda.estado,
                 sede = medico.sedeActiva,
                 totalAsignados = lista.count { it.sede == medico.sedeActiva },
-                pacientes = BuscarPacientesUseCase.filtrar(lista, medico.sedeActiva, filtros.estado, filtros.consulta),
-                error = error
+                pacientes = BuscarPacientesUseCase.filtrar(lista, medico.sedeActiva, busqueda.estado, busqueda.consulta),
+                error = busqueda.error
             )
         }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), PacientesUiState())
 
@@ -58,15 +51,18 @@ class PacientesViewModel @Inject constructor(
         cargarPacientes()
     }
 
-    fun cargarPacientes() {
-        viewModelScope.launch {
-            buscarPacientesUseCase()
-                .onSuccess { todos.value = it; error.value = null }
-                .onFailure { error.value = "No se pudo cargar la lista de pacientes" }
+    fun onEvent(event: PacientesEvent) {
+        when (event) {
+            is PacientesEvent.ConsultaChange -> busqueda.update { it.copy(consulta = event.texto) }
+            is PacientesEvent.FiltrarEstado -> busqueda.update { it.copy(estado = event.estado) }
         }
     }
 
-    fun onConsultaChange(texto: String) = filtros.update { it.copy(consulta = texto) }
-
-    fun filtrarEstado(estado: EstadoTratamiento?) = filtros.update { it.copy(estado = estado) }
+    private fun cargarPacientes() {
+        viewModelScope.launch {
+            buscarPacientesUseCase()
+                .onSuccess { lista -> busqueda.update { it.copy(todos = lista, error = null) } }
+                .onFailure { busqueda.update { it.copy(error = "No se pudo cargar la lista de pacientes") } }
+        }
+    }
 }
