@@ -80,6 +80,31 @@ fun DetalleCitaScreen(
 
     Column(modifier = Modifier.fillMaxSize()) {
         AppTopBar(titulo = "Detalle de la cita", onBack = onBack)
+
+        // MCI-18: Indicador de entorno clínico institucional Concebir Médicos
+        Surface(
+            modifier = Modifier.fillMaxWidth(),
+            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        ) {
+            Row(
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    imageVector = Icons.Outlined.CheckCircle,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(14.dp)
+                )
+                Spacer(Modifier.width(6.dp))
+                Text(
+                    text = "SERPROSA · Entorno Médico Clínico Certificado",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = TextoSecundario
+                )
+            }
+        }
+
         val detalle = uiState.detalle
         when {
             uiState.cargando -> CargandoContenido()

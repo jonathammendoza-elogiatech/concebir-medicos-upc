@@ -1,2 +1,2 @@
 # concebir-medicos-upc
-Trabajo de 1FIS0276 Plataforma Móviles y Análisis Cloud
+Trabajo de 1FIS0276 Plataformas Móviles y Análisis Cloud
