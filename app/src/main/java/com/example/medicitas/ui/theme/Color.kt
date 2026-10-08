@@ -25,7 +25,7 @@ val EstadoAtendidaFondo = Color(0xFFE8F1F9)
 val EstadoPendiente = Color(0xFF966708)
 val EstadoPendientePunto = Color(0xFFC98A0E)
 val EstadoPendienteFondo = Color(0xFFFAF4E7)
-val EstadoAlerta = Color(0xFFB3261E)
+val EstadoAlerta = Color(0xE9D27429)
 val EstadoAlertaFondo = Color(0xFFF9E9E8)
 
 val AvisoFondo = Color(0xFFEDF5F8)

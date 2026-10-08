@@ -62,6 +62,7 @@ import com.example.medicitas.presentation.common.TituloTarjeta
 import com.example.medicitas.presentation.common.colores
 import com.example.medicitas.presentation.common.formatoHora
 import com.example.medicitas.presentation.common.formatoLargo
+import com.example.medicitas.ui.theme.EstadoAlerta
 import com.example.medicitas.ui.theme.EstadoAtendida
 import com.example.medicitas.ui.theme.Fondo
 import com.example.medicitas.ui.theme.MetricaMedia
@@ -166,6 +167,10 @@ private fun TarjetaHorario(detalle: DetalleCita, uiState: DetalleCitaUiState) {
 @Composable
 private fun TarjetaPaciente(detalle: DetalleCita) {
     val paciente = detalle.paciente
+    val textoAlergia = paciente.antecedentes.alergias.trim()
+    val tieneAlergia = textoAlergia.lowercase() !in setOf("no referidas","ninguna", "sin alergias", "no refiere", "-", "")
+    val colorAlergia = if (tieneAlergia) EstadoAlerta else TextoSecundario
+
     TarjetaClinica(modifier = Modifier.fillMaxWidth()) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             AvatarIniciales(paciente.iniciales, tamano = 48.dp)
@@ -189,13 +194,16 @@ private fun TarjetaPaciente(detalle: DetalleCita) {
         }
         Spacer(Modifier.height(12.dp))
         Row(modifier = Modifier.height(IntrinsicSize.Min)) {
-            Box(Modifier.width(3.dp).fillMaxHeight().background(MaterialTheme.colorScheme.secondary))
+            Box(Modifier.width(3.dp).fillMaxHeight().background(if (tieneAlergia) EstadoAlerta else MaterialTheme.colorScheme.secondary))
             Spacer(Modifier.width(10.dp))
-            Icon(Icons.Outlined.Info, contentDescription = null, tint = TextoSecundario, modifier = Modifier.size(16.dp))
+            Icon(Icons.Outlined.Info, contentDescription = null, tint = if (tieneAlergia) EstadoAlerta else TextoSecundario, modifier = Modifier.size(16.dp))
             Spacer(Modifier.width(6.dp))
             Text(
                 buildAnnotatedString {
-                    append("Alergias medicamentosas: ${paciente.antecedentes.alergias.lowercase()} · ")
+                    append("Alergias medicamentosas: ")
+                    withStyle(SpanStyle(fontWeight = if (tieneAlergia) FontWeight.Bold else FontWeight.Normal, color = colorAlergia)) {
+                        append("$textoAlergia · ")
+                    }
                     withStyle(SpanStyle(fontWeight = FontWeight.SemiBold)) { append("Grupo ${paciente.antecedentes.grupoSanguineo}") }
                 },
                 style = MaterialTheme.typography.bodySmall,

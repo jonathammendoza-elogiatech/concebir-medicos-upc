@@ -49,6 +49,7 @@ import com.example.medicitas.domain.model.Paciente
 import com.example.medicitas.presentation.common.AppTopBar
 import com.example.medicitas.presentation.common.AvatarIniciales
 import com.example.medicitas.presentation.common.CargandoContenido
+import com.example.medicitas.presentation.common.ColoresEstado
 import com.example.medicitas.presentation.common.DatoEtiquetado
 import com.example.medicitas.presentation.common.EstadoChip
 import com.example.medicitas.presentation.common.EstadoVacio
@@ -57,6 +58,8 @@ import com.example.medicitas.presentation.common.TituloTarjeta
 import com.example.medicitas.presentation.common.colores
 import com.example.medicitas.presentation.common.formatoCorto
 import com.example.medicitas.presentation.common.formatoHora
+import com.example.medicitas.ui.theme.EstadoAlerta
+import com.example.medicitas.ui.theme.EstadoAlertaFondo
 import com.example.medicitas.ui.theme.TextoSecundario
 
 private const val MAX_ATENCIONES_RESUMEN = 3
@@ -206,6 +209,14 @@ private fun TarjetaDatos(paciente: Paciente) {
 @Composable
 private fun TarjetaAntecedentes(paciente: Paciente) {
     val antecedentes = paciente.antecedentes
+    val textoAlergia = antecedentes.alergias.trim()
+    val tieneAlergia = textoAlergia.lowercase() !in setOf("no referidas","ninguna", "sin alergias", "no refiere", "-", "")
+    val coloresChip = if (tieneAlergia) {
+        ColoresEstado(EstadoAlerta, EstadoAlertaFondo, EstadoAlerta)
+    } else {
+        EstadoCita.ATENDIDA.colores()
+    }
+
     TarjetaClinica(modifier = Modifier.fillMaxWidth()) {
         TituloTarjeta("Antecedentes clave", Icons.Outlined.HistoryEdu)
         Spacer(Modifier.height(12.dp))
@@ -214,10 +225,15 @@ private fun TarjetaAntecedentes(paciente: Paciente) {
         DatoEtiquetado("Quirúrgicos", antecedentes.quirurgicos)
         HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = MaterialTheme.colorScheme.outline)
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(Icons.Outlined.HealthAndSafety, contentDescription = null, tint = MaterialTheme.colorScheme.secondary, modifier = Modifier.size(18.dp))
+            Icon(
+                Icons.Outlined.HealthAndSafety,
+                contentDescription = null,
+                tint = if (tieneAlergia) EstadoAlerta else MaterialTheme.colorScheme.secondary,
+                modifier = Modifier.size(18.dp)
+            )
             Spacer(Modifier.width(8.dp))
             Text("Alergias medicamentosas", style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
-            EstadoChip(antecedentes.alergias, EstadoCita.ATENDIDA.colores())
+            EstadoChip(antecedentes.alergias, coloresChip)
         }
         Spacer(Modifier.height(12.dp))
         DatoEtiquetado("Grupo sanguíneo", antecedentes.grupoSanguineo)
