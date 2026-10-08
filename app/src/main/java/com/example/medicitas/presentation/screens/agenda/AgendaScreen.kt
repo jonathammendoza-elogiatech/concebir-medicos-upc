@@ -1,5 +1,6 @@
 package com.example.medicitas.presentation.screens.agenda
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -140,7 +141,14 @@ private fun SelectorFecha(uiState: AgendaUiState, onSeleccionar: (LocalDate) -> 
 private fun DiaChip(dia: LocalDate, seleccionado: Boolean, esHoy: Boolean, tieneCitas: Boolean, onClick: () -> Unit) {
     val fondo = if (seleccionado) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surface
     val texto = if (seleccionado) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface
-    Surface(onClick = onClick, shape = RoundedCornerShape(12.dp), color = fondo, modifier = Modifier.width(46.dp)) {
+    val border = if (esHoy && !seleccionado) BorderStroke(4.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)) else null //borde fecha
+    Surface(
+        onClick = onClick,
+        shape = RoundedCornerShape(12.dp),
+        color = fondo,
+        border = border,
+        modifier = Modifier.width(46.dp)
+    ) {
         Column(
             modifier = Modifier.padding(vertical = 8.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
