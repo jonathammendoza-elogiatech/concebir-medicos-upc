@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -58,6 +59,7 @@ fun AppTopBar(
                         overflow = TextOverflow.Ellipsis
                     )
                     if (subtitulo != null) {
+                        Spacer(modifier = Modifier.height(2.dp))
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             if (iconoSubtitulo != null) {
                                 Icon(iconoSubtitulo, contentDescription = null, tint = TextoSecundario, modifier = Modifier.size(14.dp))
